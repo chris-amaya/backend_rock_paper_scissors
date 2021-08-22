@@ -37,6 +37,37 @@ const socketController = (client, io) => {
       })
     })
   })
+
+  client.on('user-has-selected', ({roomCode, selection, variation}) => {
+    const roomData = room.getRoom(roomCode)
+    const opponent = room.opponent(roomCode, client.id)
+
+    client.broadcast.to(opponent.id).emit('user-has-selected', {
+      selection,
+      userId: client.id,
+    })
+
+    room.saveSelection(roomCode, client.id, selection)
+    if (room.allUserHaveSelected(roomCode)) {
+      const winner = room.winner(roomCode, variation)
+      room.incrementUserScore(roomCode, winner.id)
+      const users = room.getUsersByRoom(roomCode)
+
+      io.in(roomCode).emit('winner', winner)
+      io.in(roomCode).emit('score', users)
+
+      room.resetGame(roomCode)
+    }
+  })
+
+  client.on('reset-game', ({codeRoom}) => {
+    room.continuePlaying(codeRoom, client.id)
+    if (room.continueGame(codeRoom)) {
+      room.getUsersByRoom(codeRoom).forEach((user) => {
+        io.to(user.id).emit('continue-game', {})
+      })
+    }
+  })
 }
 
 module.exports = socketController
