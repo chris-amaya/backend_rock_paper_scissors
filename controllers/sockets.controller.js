@@ -49,8 +49,10 @@ const socketController = (client, io) => {
 
     room.saveSelection(roomCode, client.id, selection)
     if (room.allUserHaveSelected(roomCode)) {
-      const winner = room.winner(roomCode, variation)
-      room.incrementUserScore(roomCode, winner.id)
+      const winner = room.winner(roomCode, roomData.variation)
+      if (winner !== 'TIE') {
+        room.incrementUserScore(roomCode, winner.id)
+      }
       const users = room.getUsersByRoom(roomCode)
 
       io.in(roomCode).emit('winner', winner)

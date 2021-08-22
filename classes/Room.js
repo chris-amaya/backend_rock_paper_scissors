@@ -64,6 +64,11 @@ class Room {
     const choice2 = player2.selection
 
     const winner = compare(choice1, choice2, version)
+
+    if (winner === 'TIE') {
+      return winner
+    }
+
     return winner === 'PLAYER_1' ? player1 : player2
   }
 
