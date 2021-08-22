@@ -17,8 +17,25 @@ const socketController = (client, io) => {
       },
       variation,
     )
+  })
 
-    console.log(room.getRoom(roomCode))
+  client.on('join-room', ({roomCode, userName}) => {
+    const roomData = room.getRoom(roomCode)
+    client.join(roomCode)
+    user.addUser(client.id, userName, roomCode)
+    room.addUser(roomCode, {
+      id: client.id,
+      userName,
+      score: 0,
+      continue: false,
+    })
+
+    room.getUsersByRoom(roomCode).forEach((user) => {
+      io.to(user.id).emit('start-game', {
+        opponent: room.opponent(roomCode, user.id),
+        variation: roomData.variation,
+      })
+    })
   })
 }
 
